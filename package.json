@@ -1,0 +1,14 @@
+
+{
+	"name": "local_site",
+	"description": "Local web site",
+	"author": "Greg Martin <greg@softsprocket.com>",
+	"dependencies": {
+		"express": "4.12.x",
+		"express-handlebars": "2.0.x",
+		"mongodb": "2.0.x",
+		"uglify-js": "2.4.x"
+	},
+	"engine": "node >= 0.10.25"
+}
+
