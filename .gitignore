@@ -32,3 +32,6 @@ data
 # vi
 *.swp
 
+# secure
+credentials
+

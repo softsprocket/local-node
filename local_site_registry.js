@@ -1,5 +1,5 @@
 
-var MethodRegistry = require ('./method_registry');
+var MethodRegistry = require ('./modules/method_registry');
 
 module.exports = function (app, script_tag) {
 

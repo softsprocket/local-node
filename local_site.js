@@ -41,6 +41,7 @@ process.argv.forEach(function(val, index, array) {
 	}
 });
 
+
 var express = require ('express');
 
 var JSMerge = require ('./utils/jsmerge');
@@ -53,7 +54,6 @@ if (!debugging_turned_on) {
 }
 
 var script_tag = scripts.write_file_and_get_script_tag ('./public/js/local_site.min.js', 'js/local_site.min.js');
-
 
 var mongo_client = require ('mongodb').MongoClient;
 var url = 'mongodb://localhost:27017/local_site';
@@ -70,8 +70,21 @@ mongo_client.connect (url, function (err, db) {
 	app.set ('view engine', 'handlebars');
 
 	app.use (express.static (__dirname + '/public'));
+	
+	var bodyParser = require ('body-parser');
+	app.use (bodyParser.json ());
+	app.use (bodyParser.urlencoded ({ extended: false }));
 
-	require ('./local_site_registry')(app, script_tag);
+	app.use (require ('express-session') ({
+		genid: function(req) {
+		      return require ('uuid').v4 () 
+		},
+		secret: require ('./credentials/cred').session_secret,
+		resave: false,
+		saveUninitialized: false	
+	}));
+
+	require ('./local_site_registry')(app, script_tag, db);
 
 	var http = require('http');
 	http.createServer(app).listen(http_port);

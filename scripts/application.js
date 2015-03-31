@@ -2,7 +2,6 @@ require ('elements/element.js');
 
 function Application () {
 	this.elements = {};
-	this.methods = [];
 }
 
 Application.prototype.add_element = function (element) {
