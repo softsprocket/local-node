@@ -1,10 +1,14 @@
 
 var MethodRegistry = require ('./modules/method_registry');
 var LoginCollection = require ('./modules/datam/login_collection');
+var Navigation = require ('./modules/html/navigation');
+
+var navbar = new Navigation ('views/partials/navbar.handlebars');
 
 function render (res, path, script_tag, logged_in) {
 	res.render (path, { 
-		scripting: script_tag
+		scripting: script_tag,
+		navigation: navbar.html (logged_in)
 	});
 }
 

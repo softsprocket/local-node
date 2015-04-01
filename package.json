@@ -6,6 +6,7 @@
 	"dependencies": {
 		"express": "4.12.x",
 		"express-handlebars": "2.0.x",
+		"handlebars": "3.0.x",
 		"body-parser": "1.12.x",
 		"mongodb": "2.0.x",
 		"uglify-js": "2.4.x",
