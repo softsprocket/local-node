@@ -1,22 +1,57 @@
 
 var MethodRegistry = require ('./modules/method_registry');
+var LoginCollection = require ('./modules/datam/login_collection');
 
-module.exports = function (app, script_tag) {
-
-function home (req, res) {
-	res.render ('home',
-		{ 
-			scripting: script_tag
-		}	
-	);
+function render (res, path, script_tag, logged_in) {
+	res.render (path, { 
+		scripting: script_tag
+	});
 }
 
-function about (req, res) {
-	res.render ('about',
-		{ 
-			scripting: script_tag
-		}	
-	);
+function secure_render (req, res, path, script_tag) {
+
+	var session = req.session;
+
+	if (session.session_check) {
+		var login = new LoginCollection (db);
+
+		login.on ('error', function (err) {
+			console.err (path, 'LoginCollection error', err);
+			var e = new Error();
+			e.status = 500;
+			next(e);
+		});
+		
+		login.find_user (session.session_check.username);
+
+		login.on ('user', function (doc) {
+			if (doc == null) {
+				delete session.session_check;
+				console.err ("invalid session.session_check - user null");
+				render (res, path, script_tag, false);
+			} else {
+				doc.test_secure_string (session.session_check.string);
+
+				doc.on ('secure_string', function (ok) {
+					render (res, path, script_tag, ok);
+				});
+			}	
+
+		});
+
+	} else {
+		render (res, path, script_tag, false);
+	}
+}
+
+module.exports = function (app, script_tag, db) {
+
+function home (req, res, next) {
+	secure_render (req, res, 'home', script_tag);
+}
+
+function about (req, res, next) {
+	secure_render (req, res, 'about', script_tag);
 }
 
 function err_404 (req, res, next) {

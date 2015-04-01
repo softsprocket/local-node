@@ -1,4 +1,4 @@
-
+ 
 
 function Document (obj) {
 	if (obj) {
@@ -6,7 +6,7 @@ function Document (obj) {
 	}
 }
 
-function Document.Clone (obj) {
+Document.Clone = function (obj) {
 	var copy;
 
 	if (obj instanceof Date) {
@@ -34,10 +34,12 @@ function Document.Clone (obj) {
 	throw Error ('unsupported object type');
 }
 
+Document.prototype = Object.create(require('events').EventEmitter.prototype);
+
 Document.prototype.init = function (data) {
 	for (each in data) {
 		if (data.hasOwnProperty (each)) {
-			if (data[each] typeof 'object') {
+			if (typeof data[each] == 'object') {
 				this[each] = Document.Clone (data[each]);
 			} else {
 				this[each] = data[each];
@@ -51,7 +53,7 @@ Document.prototype.data = function () {
 
 	for (each in this) {
 		if (this.hasOwnProperty (each) && typeof this[each] != 'function') {
-			if (data[each] typeof 'object') {
+			if (typeof data[each] == 'object') {
 				data[each] = Document.Clone (this[each]);
 			} else {
 				data[each] = this[each];

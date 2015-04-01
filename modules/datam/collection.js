@@ -45,7 +45,7 @@ Collection.prototype.init = function (db, name) {
 
 	var self = this;
 	for (each in this.methods) {
-		this.[this.methods[each]] = function () {
+		this[this.methods[each]] = function () {
 			self.collection[self.methods[each]] (arguments, function (err, result) {
 				if (err != null) {
 					self.emit ('error', err);			

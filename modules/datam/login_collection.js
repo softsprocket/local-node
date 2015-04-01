@@ -1,6 +1,5 @@
 var bcrypt = require('bcryptjs');
 var crypto = require ('crypto');
-var fs = require ('fs');
 
 function LoginDocument (obj) {
 	if (!obj) {
@@ -21,15 +20,15 @@ LoginDocument.PasswordHashSync = function (password) {
 	return bcrypt.hashSync (password, salt);
 }
 
-LoginDocument.prototype.password_hash = function (password) {
+LoginDocument.prototype.password_hash = function () {
 	var self = this;
-	var salt = bcrypt.genSalt (10, function (err, salt) {
+	bcrypt.genSalt (10, function (err, salt) {
 		if (err) {
 			self.emit ('error', err);
 			return;
 		}
 	
-		bcrypt.hash (password, salt, function (err, hash) {
+		bcrypt.hash (self.password, salt, function (err, hash) {
 			if (err) {
 				self.emit ('error', err);
 				return;
@@ -46,9 +45,9 @@ LoginDocument.PasswordTest = function (password, hash) {
 	return bcrypt.compareSync(password, hash);
 }
 
-LoginDocument.prototype.password_test = function (password, hash) {
+LoginDocument.prototype.password_test = function (password) {
 	var self = this;
-	return bcrypt.compare (password, hash, function (err, res) {
+	return bcrypt.compare (password, self.password, function (err, res) {
 		if (err) {
 			self.emit ('error', err);
 			return;
@@ -58,20 +57,38 @@ LoginDocument.prototype.password_test = function (password, hash) {
 	});
 }
 
-LoginDocument.GenerateSecureString = function (hash, username) {
-	var hmac = crypto.createHmac ('sha512', require ('../credentials/cred').cookie_secret);
-	hmac.update (username);
-	return hmac.digest ('base64');
-}
-
-LoginDocument.prototype.generate_secure_string = function (hash, username) {
+LoginDocument.prototype.generate_secure_string = function (date) {
 	var self = this;
 	var hmac = crypto.createHmac ('sha512', require ('../credentials/cred').cookie_secret);
 	hmac.setEncoding ('base64');
 
-	hmac.end (username, function () {
-		var hash = hmac.read ('base64');
-		self.emit ('secure_string', hash); 
+	hmac.end (date + username + hash, function () {
+		var h = hmac.read ('base64');
+		self.emit ('secure_string', date + ":" + h); 
+	});
+
+	hmac.on ('error', function (err) {
+		self.emit ('error', err);
+	});
+}
+
+LoginDocument.prototype.test_secure_string = function (str) {
+	var self = this;
+
+	var date = str.split (':')[0];
+
+	var hmac = crypto.createHmac ('sha512', require ('../credentials/cred').cookie_secret);
+	hmac.setEncoding ('base64');
+
+	hmac.end (date + username + hash, function () {
+		var h = hmac.read ('base64');
+		
+		var ok = false;
+		if (date + ":" + h == str) {
+			ok = true;
+		}
+
+		self.emit ('secure_string', ok); 
 	});
 
 	hmac.on ('error', function (err) {
@@ -86,6 +103,22 @@ function LoginCollection (db) {
 LoginCollection.prototype = Object.create (require ('./collection').prototype);
 
 LoginCollection.Document = LoginDocument;
+
+LoginCollection.prototype.find_user = function (name) {
+	var self = this;
+	this.collection.findOne ({ username: name }, function (err, doc) {
+		if (err) {
+			self.emit ('error', err);
+			return;
+		}
+
+		if (doc == null) {
+			self.emit ('user', null);
+		} else {
+			self.emit ('user', new LoginDocument (doc));
+		}
+	});
+}
 
 module.exports = LoginCollection;
 
