@@ -43,13 +43,14 @@ Collection.prototype.init = function (db, name) {
 		"insertMany"
 	];
 
+	var self = this;
 	for (each in this.methods) {
 		this.[this.methods[each]] = function () {
-			this.collection[this.methods[each]] (arguments, function (err, result) {
+			self.collection[self.methods[each]] (arguments, function (err, result) {
 				if (err != null) {
-					this.emit ('error', err);			
+					self.emit ('error', err);			
 				} else {
-					this.emit ('success', result);
+					self.emit ('success', result);
 				}
 			});
 			
