@@ -56,14 +56,24 @@ if (!debugging_turned_on) {
 var script_tag = scripts.write_file_and_get_script_tag ('./public/js/local_site.min.js', 'js/local_site.min.js');
 
 var mongo_client = require ('mongodb').MongoClient;
-var url = 'mongodb://localhost:27017/local_site';
-mongo_client.connect (url, function (err, db) {
+var mongo_url = 'mongodb://localhost:27017/local_site';
+mongo_client.connect (mongo_url, function (err, db) {
 	if (err != null) {
 		console.error ("Failed to connect to mongodb: " + err);
 		process.exit (1);
 	}
 
 	var app = express ();
+
+	app.use (function (req, res, next) {
+		if (https_config != null && !req.secure) {
+			var u = req.get ('Host').split (':')[0];
+			var forward_to = ['https://', [u, https_config.port].join (':'), req.url].join ('');
+			return res.redirect (forward_to);
+		}
+
+		next ();
+	});
 
 	var handlebars = require ('express-handlebars').create ({ defaultLayout: 'main' });
 	app.engine ('handlebars', handlebars.engine);
@@ -91,11 +101,13 @@ mongo_client.connect (url, function (err, db) {
 
 	if (https_config != null) {
 		var https = require('https');
-		var private_key  = fs.readFileSync (https_config.private_key, 'utf8');
-		var certificate = fs.readFileSync (https_config.certificate, 'utf8');
+		var fs = require ('fs');
+
+		var private_key  = fs.readFileSync (https_config.key, 'utf8');
+		var certificate = fs.readFileSync (https_config.cert, 'utf8');
 
 		var credentials = { key: private_key, cert: certificate };
-		https.createServer (credentials, app).listen(https_config.port);
+		https.createServer (credentials, app).listen (https_config.port);
 	}
 
 });

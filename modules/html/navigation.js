@@ -7,7 +7,7 @@ function Navigation (partial_name) {
 }
 
 Navigation.prototype.html = function (loggedin) {
-	var context = { login: loggedin ? 'login' : 'logout' }
+	var context = { login: loggedin ? 'logout' : 'login' }
 	return this.template (context);
 }
 
