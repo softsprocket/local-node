@@ -1,4 +1,7 @@
-<ul id='navbar'>
-	<li><a id='login_nav' href='/{{ login }}'>{{ login }}</a></li>
+<ul id='navbar' style='list-style-type: none;'>
+	<li style='display: inline;'><a id='login_nav' href='/{{ login }}'>{{ login }}</a></li>
+	{{#if register}}
+		<li style='display: inline;'><a id='register_nav' href='/register'>register</a></li>
+	{{/if}}
 </ul>
 

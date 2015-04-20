@@ -1,5 +1,10 @@
 
 function Collection (db, name) {
+	this.db;
+	this.name;
+	this.collection;
+	this.methods;
+
 	if (db) {
 		this.init (db, name);
 	}
@@ -45,16 +50,25 @@ Collection.prototype.init = function (db, name) {
 
 	var self = this;
 	for (each in this.methods) {
-		this[this.methods[each]] = function () {
-			self.collection[self.methods[each]] (arguments, function (err, result) {
+		var method = this.methods[each];
+		var o = { method: method };
+		this[method] = function () {
+			var method = this.method;
+			var args = [];
+			for (var i = 0; i < arguments.length; ++i) {
+				args[i] = arguments[i];
+			}
+
+			args.push (function (err, result) {
 				if (err != null) {
-					self.emit ('error', err);			
+					self.emit ('error', err);
 				} else {
-					self.emit ('success', result);
+					self.emit (method, result);
 				}
 			});
-			
-		}
+
+			self.collection[method].apply (self.collection, args);
+		}.bind (o);
 	}
 }
 

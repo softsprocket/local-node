@@ -1,0 +1,11 @@
+{ 
+	"debug": false,
+	"mongo_url": "mongodb://localhost:27017/local_site",
+	"http_port": 3000,
+	"https_config": {
+		"port": 3443,
+		"key": "credentials/key.pem",
+		"cert": "credentials/cert.pem"
+	}
+}
+

@@ -1,37 +1,65 @@
- 
+var ObjectID = require ('mongodb').ObjectID;
 
 function Document (obj) {
 	if (obj) {
 		this.init (obj);
 	}
+
+	this.schema;
 }
 
 Document.Clone = function (obj) {
-	var copy;
+
+	if (obj instanceof ObjectID) {
+		return ObjectID(obj);
+	}
 
 	if (obj instanceof Date) {
-		copy = new Date ();
+		var copy = new Date ();
 		copy.setTime (obj.getTime ());
 		return copy;
 	}
 
 	if (obj instanceof Array) {
-		copy = [];
-		for (var i = 0, len = obj.length; i < len; i++) {
-			copy[i] = Document.Clone (obj[i]);
-		}
+		var copy = Document.CopyArray (obj);
 		return copy;
 	}
 
 	if (obj instanceof Object) {
-		copy = {};
-		for (var attr in obj) {
-			if (obj.hasOwnProperty (attr)) copy[attr] = Document.Clone (obj[attr]);
-		}
+		var copy = Document.CopyObject (obj);
 		return copy;
 	}
 
+	console.error ('Clone obj', obj);
 	throw Error ('unsupported object type');
+}
+
+Document.CopyArray = function (array) {
+	var copy = []; 
+	for (each in array) {
+		if (typeof array[each] == 'object') {
+			copy[each] = Document.Clone (array[each]);
+		} else {
+			copy[each] = array[each];
+		}
+	}
+
+	return copy;
+}
+
+Document.CopyObject = function (obj) {
+	var copy = {}; 
+	for (each in obj) {
+		if (obj.hasOwnProperty (each)) {
+			if (typeof obj[each] == 'object') {
+				copy[each] = Document.Clone (obj[each]);
+			} else {
+				copy[each] = obj[each];
+			}
+		}
+	}
+
+	return copy;
 }
 
 Document.prototype = Object.create(require('events').EventEmitter.prototype);
@@ -53,7 +81,11 @@ Document.prototype.data = function () {
 
 	for (each in this) {
 		if (this.hasOwnProperty (each) && typeof this[each] != 'function') {
-			if (typeof data[each] == 'object') {
+			if (typeof this.schema[each] == 'undefined') {
+				continue;
+			}
+
+			if (typeof this[each] == 'object') {
 				data[each] = Document.Clone (this[each]);
 			} else {
 				data[each] = this[each];
@@ -66,12 +98,6 @@ Document.prototype.data = function () {
 
 Document.prototype.to_json = function () {
 	return JSON.stringify (this.data ());
-}
-
-Document.from_json = function (json) {
-	var data = JSON.parse (json);
-	var doc = new Document (data);
-	return doc;
 }
 
 module.exports = Document;

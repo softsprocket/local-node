@@ -31,7 +31,6 @@ MethodRegistry.prototype.execute = function () {
 		} else {
 			args.push (this.methods[i].callback);
 		}
-		console.log (this.methods[i]);
 		this.app[this.methods[i].method].apply (this.app, args);
 	}
 }

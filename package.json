@@ -12,8 +12,10 @@
 		"uglify-js": "2.4.x",
 		"bcryptjs": "2.1.x",
 		"express-session": "1.10.x",
+		"connect-mongo": "0.8.x",
 		"uuid": "2.0.x"
 	},
-	"engine": "node >= 0.10.x"
+	"engine": "node >= 0.10.x",
+	"scripts": { "start": "node local_site.js" }
 }
 

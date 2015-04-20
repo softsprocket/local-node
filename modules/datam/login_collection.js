@@ -1,16 +1,22 @@
 var bcrypt = require('bcryptjs');
 var crypto = require ('crypto');
+var ObjectID = require ('mongodb').ObjectID;
+
 
 function LoginDocument (obj) {
-	if (!obj) {
-		obj = {
-			username: null,
-			password: null,
-			date: null
-		};
-	} 
+	this.schema = {
+		_id: null,
+		name: null,
+		password: null,
+		email: null,
+		date: null,
+	};
 
-	this.init (obj);
+	if (!obj) {
+		this.init (this.schema);
+	} else {
+		this.init (obj);
+	}
 }
 
 LoginDocument.prototype = Object.create (require ('./document').prototype);
@@ -33,8 +39,9 @@ LoginDocument.prototype.password_hash = function () {
 				self.emit ('error', err);
 				return;
 			}
-
-			self.emit ('password_hash', hash); 	
+			
+			self.password = hash;
+			self.emit ('password_hash'); 	
 		});
 		
 	});
@@ -57,41 +64,41 @@ LoginDocument.prototype.password_test = function (password) {
 	});
 }
 
-LoginDocument.prototype.generate_secure_string = function (date) {
+LoginDocument.prototype.generate_secure_string = function (agent) {
 	var self = this;
-	var hmac = crypto.createHmac ('sha512', require ('../credentials/cred').cookie_secret);
+	var hmac = crypto.createHmac ('sha512', require ('../../credentials/cred').cookie_secret);
 	hmac.setEncoding ('base64');
 
-	hmac.end (date + username + hash, function () {
+	hmac.end (agent + this.name + this.password, function () {
 		var h = hmac.read ('base64');
-		self.emit ('secure_string', date + ":" + h); 
+		self.emit ('secure_string', h); 
 	});
 
-	hmac.on ('error', function (err) {
+	hmac.once ('error', function (err) {
 		self.emit ('error', err);
 	});
 }
 
-LoginDocument.prototype.test_secure_string = function (str) {
+LoginDocument.prototype.test_secure_string = function (str, agent) {
 	var self = this;
 
 	var date = str.split (':')[0];
 
-	var hmac = crypto.createHmac ('sha512', require ('../credentials/cred').cookie_secret);
+	var hmac = crypto.createHmac ('sha512', require ('../../credentials/cred').cookie_secret);
 	hmac.setEncoding ('base64');
 
-	hmac.end (date + username + hash, function () {
+	hmac.end (agent + this.name + this.password, function () {
 		var h = hmac.read ('base64');
 		
 		var ok = false;
-		if (date + ":" + h == str) {
+		if (h == str) {
 			ok = true;
 		}
 
-		self.emit ('secure_string', ok); 
+		self.emit ('test_secure_string', ok); 
 	});
 
-	hmac.on ('error', function (err) {
+	hmac.once ('error', function (err) {
 		self.emit ('error', err);
 	});
 }
@@ -105,8 +112,9 @@ LoginCollection.prototype = Object.create (require ('./collection').prototype);
 LoginCollection.Document = LoginDocument;
 
 LoginCollection.prototype.find_user = function (name) {
+
 	var self = this;
-	this.collection.findOne ({ username: name }, function (err, doc) {
+	this.collection.findOne ({ name: name }, function (err, doc) {
 		if (err) {
 			self.emit ('error', err);
 			return;
@@ -115,7 +123,25 @@ LoginCollection.prototype.find_user = function (name) {
 		if (doc == null) {
 			self.emit ('user', null);
 		} else {
-			self.emit ('user', new LoginDocument (doc));
+			self.emit ('user', doc);
+		}
+	});
+}
+
+LoginCollection.prototype.find_user_by_id = function (id) {
+
+	var self = this;
+	this.collection.findOne ({ _id: new ObjectID (id) }, function (err, doc) {
+
+		if (err) {
+			self.emit ('error', err);
+			return;
+		}
+
+		if (doc == null) {
+			self.emit ('user_by_id', null);
+		} else {
+			self.emit ('user_by_id', doc);
 		}
 	});
 }

@@ -1,0 +1,26 @@
+
+<form id='user_login' action='/login' method='PUT' style='display:none;'>
+	<label for='user_name'>User Name</label>
+	<input type='text' id='user_name'></input>
+	<label for='user_password'>Password</label>
+	<input type='password' id='user_password'></input>
+	<button type="submit">Log In</button>
+	<div id='user_login_resp'></div>
+</form>
+
+<form id='user_logout' action='/login' method='PUT' style='display:none;'>
+	<button type="submit">Log Out</button>
+</form>
+
+<form id='user_register' action='/login' method='POST' style='display:none;'>
+	<label for='user_reg_name'>User Name</label>
+	<input type='text' id='user_reg_name'></input>
+	<label for='user_reg_email'>User email</label>
+	<input type='email' id='user_reg_email'></input>
+	<label for='user_reg_password'>Password</label>
+	<input type='password' id='user_reg_password'></input>
+	<label for='confirm_password'>Confirm Password</label>
+	<input type='password' id='user_reg_confirm_password'></input>
+	<button type="submit">Register</button>
+	<div id='user_register_resp'></div>
+</form>
