@@ -96,24 +96,36 @@ function about (req, res, next) {
 	render (res, 'about', script_tag, has_logged_in_session (req));
 }
 
-function err_401 (req, res, next) {
-	res.status = 401;
-	render (res, '401', script_tag, has_logged_in_session (req));
+function err_401 (req, res, next, api_err) {
+	if (api_err) {
+		res.send ("401 Unauthorized");
+	} else {
+		render (res, '401', script_tag, has_logged_in_session (req));
+	}
 }
 
-function err_403 (req, res, next) {
-	res.status = 403;
-	render (res, '403', script_tag, has_logged_in_session (req));
+function err_403 (req, res, next, api_err) {
+	if (api_err) {
+		res.send ("403 Forbidden");
+	} else {
+		render (res, '403', script_tag, has_logged_in_session (req));
+	}
 }
 
-function err_404 (req, res, next) {
-	res.status = 404;
-	render (res, '404', script_tag, has_logged_in_session (req));
+function err_404 (req, res, next, api_err) {
+	if (api_err) {
+		res.send ("404 Not Found");
+	} else {
+		render (res, '404', script_tag, has_logged_in_session (req));
+	}
 }
 
-function err_500 (req, res, next) {
-	res.status = 500;
-	render (res, '500', script_tag, has_logged_in_session (req));
+function err_500 (req, res, next, api_err) {
+	if (api_err) {
+		res.send ("500 Internal Server Error");
+	} else {
+		render (res, '500', script_tag, has_logged_in_session (req));
+	}
 }
 
 function login_test (req, res, next) {
@@ -121,20 +133,23 @@ function login_test (req, res, next) {
 }
 
 function error_handler (err, req, res, next) {
+	console.log (__logd, err);
 	if (err && err.status) {
-		
+		api_err = err.api ? true: false;
+		res.status (err.status);
+
 		switch (err.status) {
 			case 401:
-				err_401 (req, res, next);
+				err_401 (req, res, next, api_err);
 				break;
 			case 403:
-				err_403 (req, res, next);
+				err_403 (req, res, next, api_err);
 				break;
 			case 404:
-				err_404 (req, res, next);
+				err_404 (req, res, next, api_err);
 				break;
 			case 500:
-				err_500 (req, res, next);
+				err_500 (req, res, next, api_err);
 				break;
 			default:
 				console.error (__errd, 'unhandled error code');
